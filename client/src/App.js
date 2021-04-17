@@ -3,8 +3,10 @@ import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import getWeb3 from "./getWeb3";
 
 import "./App.css";
+import RouletteWheel from "./components/RouleteWheel"
 
 import Test from "./components/Test";
+import RouleteTable from "./components/RouleteTable";
 
 class App extends Component {
   // state = { storageValue: 0, web3: null, accounts: null, contract: null };
@@ -55,8 +57,13 @@ class App extends Component {
     //   return <div>Loading Web3, accounts, and contract...</div>;
     // }
     return (
+
       <div className="App">
         <Test/>
+        
+        <RouletteWheel/>
+
+        <RouleteTable/>
         {/* <h1>Good to Go!</h1>
         <p>Your Truffle Box is installed and ready.</p>
         <h2>Smart Contract Example</h2>
