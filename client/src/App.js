@@ -7,6 +7,8 @@ import RouletteWheel from "./components/RouleteWheel";
 
 import Test from "./components/Test";
 import BettingPanel from "./components/BettingPanel/BettingPanel";
+import RouleteTable from "./components/RouleteTable";
+import ListRound from "./components/ListRound";
 
 function App() {
   // state = { storageValue: 0, web3: null, accounts: null, contract: null };

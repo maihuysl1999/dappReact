@@ -3,7 +3,7 @@ import BoNhaCai from "../contracts/BoNhaCai.json";
 import SimpleLottery from "../contracts/SimpleLottery.json";
 import getWeb3 from "../getWeb3";
 
-class Test extends Component {
+class ListRound extends Component {
   state = {
     storageValue: 0,
     web3: null, accounts: null,
@@ -28,6 +28,9 @@ class Test extends Component {
         deployedNetwork && deployedNetwork.address,
       );
       let response = await instance.methods.balanceOf(accounts[0]).call();
+      await instance.methods.getLengthRounds().call().then((res)=>{
+        console.log(res);
+      });
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
@@ -41,49 +44,7 @@ class Test extends Component {
     }
   };
 
-  onBuyToken = (e) => {
-
-    const { web3, accounts, contract, numbToken } = this.state;
-    //console.log(numbToken);
-
-    // Stores a given value, 5 by default.
-    contract.methods.buyToken().send({ from: accounts[0], value: web3.utils.toWei(numbToken, "ether") });
-
-    // Get the value from the contract to prove it worked.
-    contract.methods.balanceOf(accounts[0]).call().then((res) => {
-      // Update state with the result.
-      this.setState({ storageValue: res });
-    });
-    e.preventDefault();
-  };
-
-  onChange = (e) => {
-    this.setState({
-      numbToken: e.target.value
-    })
-  }
-
-
-  onCreateRound = async () => {
-    const { web3, accounts, contract , networkId} = this.state;
-    const deployedNetwork = SimpleLottery.networks[networkId];
-    const instance = new web3.eth.Contract(
-      SimpleLottery.abi,
-      deployedNetwork && deployedNetwork.address,
-    );
-    console.log(instance._address);
-    let roundId = 0;
-    await contract.methods.createRound(0, instance._address ,1618659175, 20).send({ from: accounts[0] })
-    .then(function(event) {
-      roundId = event.events.NewRound.returnValues[1];
-    });
-    await contract.methods.getRound(roundId).call().then((res)=>{
-      //console.log(res);
-      this.setState({roundInfor:res})
-    })
-    //window.location.reload();
-  };
-
+  
   render() {
     return (
       <div className="App">
@@ -100,4 +61,4 @@ class Test extends Component {
   }
 }
 
-export default Test;
+export default ListRound;
