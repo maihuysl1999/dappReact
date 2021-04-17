@@ -8,7 +8,6 @@ class RouleteTable extends Component {
 	
             // table
             (function() {
-                "use strict"
                 
                 function getButtonCells(btn) {
                     var cells = btn.data('cells');
@@ -17,20 +16,18 @@ class RouleteTable extends Component {
                         switch (btn.data('type')) {
                             case 'sector':
                                 var nums = sectors[btn.data('sector')];
-                                for (var i = 0, len = nums.length; i < len; i++) {
+                                for (let i = 0, len = nums.length; i < len; i++) {
                                     cells.push(table_nums[nums[i]]);
                                 }
                                 return cells;
-                                break;
                             case 'num':
                             default:
                                 var nums = String(btn.data('num')).split(',');
-                                for (var i = 0, len = nums.length; i < len; i++) {
+                                for (let i = 0, len = nums.length; i < len; i++) {
                                     cells.push(table_nums[nums[i]]);
                                 }
                                 btn.data('cells', cells)
                                 return btn.data('cells');
-                                break;
                         }
                     }
                     return cells;
@@ -75,12 +72,11 @@ class RouleteTable extends Component {
                 // init
                 $(selectors.num).each(function() {
                     var $this = $(this),
-                        color,
                         num = Number($this.text());
                     // add to instances array
                     table_nums[num] = $this;
                     // add to colors array
-                    for (var color in numbers) {
+                    for (let color in numbers) {
                         if ($this.hasClass(classes[color])) {
                             numbers[color].push(num);
                             $this.data('color', color);
@@ -103,12 +99,12 @@ class RouleteTable extends Component {
                 });
         
                 // sort numbers
-                for (var color in numbers) {
+                for (let color in numbers) {
                     numbers[color].sort(function(a, b) { return a - b; });
                 }
         
                 // populate sectors
-                for (var i = 1; i <= 36; i++) {
+                for (let i = 1; i <= 36; i++) {
                     // 1st row, 2nd row, 3rd row
                     switch (i%3) {
                         case 0:
@@ -120,6 +116,7 @@ class RouleteTable extends Component {
                         case 2:
                             sectors['2'].push(i);
                             break;
+                        default: break;
                     }
         
                     // 1st 12, 2nd 12, 3rd 12
@@ -159,7 +156,7 @@ class RouleteTable extends Component {
                         if (active) {
                             var $this = $(this),
                                 cells = getButtonCells($this);
-                            for (var i = 0, len = cells.length; i < len; i++) {
+                            for (let i = 0, len = cells.length; i < len; i++) {
                                 cells[i].addClass(classes.hover);
                             }
                             var sector = $this.data('sector');
@@ -172,7 +169,7 @@ class RouleteTable extends Component {
                         hovering=0;
                         var $this = $(this),
                             cells = getButtonCells($this);
-                        for (var i = 0, len = cells.length; i < len; i++) {
+                        for (let i = 0, len = cells.length; i < len; i++) {
                             cells[i].removeClass(classes.hover);
                         }
                         var sector = $this.data('sector');
@@ -194,8 +191,8 @@ class RouleteTable extends Component {
                         if(typeof numbers.length ==='undefined')numbers=[numbers];
                         else numbers=numbers.split(',');
                         
-                        if(e.button==2)for(var i=0;i<numbers.length;i++)ChangeBet(numbers[i],-1);
-                        else for(var i=0;i<numbers.length;i++)ChangeBet(numbers[i],+1);
+                        if(e.button==2)for(let i=0;i<numbers.length;i++)ChangeBet(numbers[i],-1);
+                        else for(let i=0;i<numbers.length;i++)ChangeBet(numbers[i],+1);
                     }
                 });
             })();
@@ -207,7 +204,7 @@ class RouleteTable extends Component {
         
         var squares=new Array(48);
         var divs=document.getElementsByTagName("div");
-        for(var i=0;i<divs.length;i++){
+        for(let i=0;i<divs.length;i++){
             var attr=divs[i].getAttribute("data-num");
             if(attr==null){
                 attr=divs[i].getAttribute("data-sector");
@@ -230,14 +227,14 @@ class RouleteTable extends Component {
         function UpdateBets(){
             var betdiv=document.getElementById("bets");
             betdiv.innerHTML='';
-            for(var i=37;i<bets.length;i++)if(bets[i]>0)betdiv.innerHTML+=sectors[i-37]+": "+(bets[i]*CurrentTier).toFixed(2)+"<br>";
-            for(var i=0;i<37;i++)if(bets[i]>0)betdiv.innerHTML+="Number "+i+": "+(bets[i]*CurrentTier).toFixed(2)+"<br>";
+            for(let i=37;i<bets.length;i++)if(bets[i]>0)betdiv.innerHTML+=sectors[i-37]+": "+(bets[i]*CurrentTier).toFixed(2)+"<br>";
+            for(let i=0;i<37;i++)if(bets[i]>0)betdiv.innerHTML+="Number "+i+": "+(bets[i]*CurrentTier).toFixed(2)+"<br>";
         }
         
         function Reset(){
-            for(var i=0;i<bets.length;i++){
+            for(let i=0;i<bets.length;i++){
                 bets[i]=0;
-                if(chips[i]!=null)for(var j=0;chips[i].length>0;j++)document.body.removeChild(chips[i].pop());
+                if(chips[i]!=null)for(let j=0;chips[i].length>0;j++)document.body.removeChild(chips[i].pop());
             }
             balance=1;
             
@@ -247,7 +244,7 @@ class RouleteTable extends Component {
         
         function TotalBets(){
             var r=0;
-            for(var i=0;i<bets.length;i++)r+=bets[i];
+            for(let i=0;i<bets.length;i++)r+=bets[i];
             return r;
         }
         
@@ -299,7 +296,7 @@ class RouleteTable extends Component {
         
         function Place(){
             var bet=0;
-            for(var i=0;i<bets.length;i++)if(bets[i]!=0)bet+=bets[i];
+            for(let i=0;i<bets.length;i++)if(bets[i]!=0)bet+=bets[i];
             bet*=CurrentTier;
             
             if(bet>balance){
@@ -312,7 +309,7 @@ class RouleteTable extends Component {
             
             var win=0;
             if(bets[result]!=0)win+=bets[result]*36;
-            for(var i=37;i<bets.length;i++)if(bets[i]!=0)win+=bets[i]*sectormultipliers[i-37][result];
+            for(let i=37;i<bets.length;i++)if(bets[i]!=0)win+=bets[i]*sectormultipliers[i-37][result];
             
             win*=CurrentTier;
             win-=bet;
@@ -743,8 +740,8 @@ class RouleteTable extends Component {
             </div>
             Your bets:
             <div style={{width: '400px'}}>
-              <button onclick="Place()">Place bet</button>
-              <button onclick="Reset()">Reset</button>
+              <button onClick="Place()">Place bet</button>
+              <button onClick="Reset()">Reset</button>
               <div id="bets" style={{float: 'left', width: '200px', height: '150px', overflowY: 'scroll'}} />
               <div id="balance" style={{float: 'left', width: '200px'}}>Balance: 1.00 ETH</div><br />
               <div id="result" style={{float: 'left', width: '200px'}} /><br />
