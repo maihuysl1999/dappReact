@@ -64,6 +64,8 @@ contract Roulette {
     address public BoNhaCaiAddr;
     BoNhaCai boNhaCai;
 
+    event Result(uint roundId, uint value);
+
     mapping(uint256 => uint256) public winners;
 
     constructor(address addr) {
@@ -89,7 +91,10 @@ contract Roulette {
         require(block.timestamp > endTime);
 
         bytes32 rand = keccak256(abi.encode(blockhash(block.number - 1)));
-        winners[roundId] = (uint256(rand) % NUM_POCKETS) + 1;
+        uint result = (uint256(rand) % NUM_POCKETS) + 1;
+        winners[roundId] = result;
+        emit Result(roundId, result);
+
     }
 
     function checkResult(uint256 ticketId)
@@ -142,19 +147,21 @@ contract Roulette {
         }
     }
 
-    function checkTicketBuy(uint256 roundId, uint256 _data)
-        public
-        view
-        virtual
-        returns (bool)
-    {
+    function checkTicketBuy(
+        uint256 roundId,
+        uint256 _data,
+        uint256 _ticketPrice
+    ) public view virtual returns (bool) {
         uint256 data;
         uint256 endTime;
-        (data, endTime,,) = boNhaCai.getRound(roundId);
-        require(endTime > block.timestamp);
-        require(winners[roundId] == 0);
-        require(checkBetData(_data));
-        return true;
+        (data, endTime, , ) = boNhaCai.getRound(roundId);
+        if (
+            (endTime > block.timestamp) &&
+            (winners[roundId] == 0) &&
+            checkBetData(_data) &&
+            (_ticketPrice <= data)
+        ) return true;
+        else return false;
     }
 
     function checkBetData(uint256 data) public pure returns (bool) {
@@ -203,7 +210,7 @@ contract Roulette {
         virtual
         returns (bool)
     {
-        require(_endTime > block.timestamp, "ngu");
-        return true;
+        if (_endTime > block.timestamp) return true;
+        else return false;
     }
 }

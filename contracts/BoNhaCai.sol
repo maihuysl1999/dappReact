@@ -11,7 +11,7 @@ abstract contract checkResultInterface {
 }
 
 abstract contract checkTicketBuyInterface {
-    function checkTicketBuy(uint roundId, uint256 _data) public view virtual returns (bool);
+    function checkTicketBuy(uint roundId, uint256 _data, uint256 _ticketPrice) public view virtual returns (bool);
 }
 
 abstract contract checkRoundCreateInterface {
@@ -98,7 +98,7 @@ contract BoNhaCai is CustomERC20, ReentrancyGuard{
         uint256 _roundId
     ) external{
         require(_roundExists(_roundId), "Operator query for nonexistent round");
-        require(checkTicketBuyInterface(rounds[_roundId].resultContract).checkTicketBuy(_roundId, _data));
+        require(checkTicketBuyInterface(rounds[_roundId].resultContract).checkTicketBuy(_roundId, _data, _price));
         _transferToRound(msg.sender, _roundId, _price);
         Ticket memory newTicket = Ticket(_data, _price, _roundId, false);
         tickets.push(newTicket);
