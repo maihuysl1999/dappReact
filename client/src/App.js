@@ -1,19 +1,18 @@
 import React, { useRef } from "react";
-import SimpleStorageContract from "./contracts/SimpleStorage.json";
-import getWeb3 from "./getWeb3";
-
 import "./App.css";
-import RouletteWheel from "./components/RouleteWheel";
-
-import Test from "./components/Test";
-import BettingPanel from "./components/BettingPanel/BettingPanel";
-import ListRound from "./components/ListRound";
 import {
   BrowserRouter as Router,
   Switch,
   Route,
   //Link
 } from "react-router-dom";
+
+import Roulete from "./components/Roulete";
+import RouletteWheel from "./components/RouleteWheel";
+import Test from "./components/Test";
+import BettingPanel from "./components/BettingPanel/BettingPanel";
+
+
 
 function App() {
 
@@ -23,8 +22,8 @@ function App() {
 
   const childRef = useRef();
 
-  return ( <Router>
-    <div className="App">
+  return (<Router>
+    {/* <div className="App">
       <div
         style={{
           display: "flex",
@@ -35,13 +34,16 @@ function App() {
         <RouletteWheel ref={childRef} />
         <BettingPanel spin={spin} />
       </div>
+     </div>*/}
       <Switch>
-          <Route exact path="/SimpleLottery">
-            <Test />
-          </Route>
-        </Switch>
-    </div>
-    </Router>  
+        <Route exact path="/">
+          <Roulete />
+        </Route>
+        <Route exact path="/SimpleLottery">
+          <Test />
+        </Route>
+      </Switch>
+  </Router>
   );
 }
 

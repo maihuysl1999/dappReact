@@ -35,7 +35,7 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// SPDX-License-Identifier: MIT\r\n\r\npragma solidity ^0.8.0;\r\n\r\nimport \"./CustomERC20.sol\";\r\nimport \"@openzeppelin/contracts/security/ReentrancyGuard.sol\";\r\n\r\n\r\nabstract contract checkResultInterface {\r\n    function checkResult(uint ticketId) public view virtual returns (uint256);\r\n}\r\n\r\nabstract contract checkTicketBuyInterface {\r\n    function checkTicketBuy(uint roundId, uint256 _data, uint256 _ticketPrice) public view virtual returns (bool);\r\n}\r\n\r\nabstract contract checkRoundCreateInterface {\r\n    function checkRoundCreate(uint256 _data, uint _endtime) public view virtual returns (bool);\r\n}\r\n\r\ncontract BoNhaCai is CustomERC20, ReentrancyGuard{\r\n    uint256 public token_price;\r\n    address private admin;\r\n    \r\n    constructor(uint256 _price) CustomERC20(\"Chip\", \"CHI\") {\r\n        admin = msg.sender;\r\n        token_price = _price;\r\n    }\r\n\r\n    struct Ticket {\r\n        uint256 data;\r\n        uint256 ticketPrice;\r\n        uint256 roundId;\r\n        bool used;\r\n    }\r\n\r\n    struct Round {\r\n        uint256 data;\r\n        uint256 endTime;\r\n        address resultContract;\r\n        uint256[] ticketIds;\r\n    }\r\n\r\n    Ticket[] public tickets;\r\n    Round[] public rounds;\r\n\r\n    mapping(uint256 => uint256) private _balanceOfRounds;\r\n\r\n    mapping(uint256 => address) private _roundOwners;\r\n\r\n    mapping(uint256 => address) private _ticketOwners;\r\n\r\n    event NewRound(address owner, uint roundId, address resultContract, uint256 endTime, uint balance);\r\n    event NewTicket(address owner, uint ticketId, uint data, uint ticketPrice, uint roundId, bool used);\r\n    event WithDrawTicket(address owner, uint ticketId, uint amount);\r\n    event WithDrawRound(address owner, uint roundId, uint amount);\r\n\r\n    function getAdmin() view public returns(address){\r\n        return admin;\r\n    }\r\n\r\n    function setPriceToken(uint256 _newPrice) public {\r\n        require(msg.sender == admin);\r\n        token_price = _newPrice;\r\n    }\r\n\r\n    function getRound(uint256 _roundId) public view returns(uint256 , uint256 , address , uint256[] memory) {    \r\n        require(_roundExists(_roundId));    \r\n        return (rounds[_roundId].data, rounds[_roundId].endTime, rounds[_roundId].resultContract, rounds[_roundId].ticketIds);\r\n    } \r\n\r\n    function getLengthRounds() public view returns(uint256) {\r\n        return rounds.length;\r\n    }\r\n\r\n\r\n    function getTicket(uint256 _ticketId) public view returns(uint256 , uint256 , uint256 , bool){\r\n        require(_ticketExists(_ticketId));\r\n        return (tickets[_ticketId].data, tickets[_ticketId].ticketPrice, tickets[_ticketId].roundId, tickets[_ticketId].used);\r\n    }\r\n\r\n    function createRound(\r\n        uint256 _data,\r\n        address _resultContract,\r\n        uint256 _endTime,\r\n        uint256 _balance\r\n    ) external {\r\n        require(checkRoundCreateInterface(_resultContract).checkRoundCreate(_data, _endTime));\r\n        Round memory newRound;\r\n        newRound.endTime = _endTime;\r\n        newRound.resultContract = _resultContract;\r\n        newRound.data = _data;\r\n        rounds.push(newRound);\r\n        uint roundId = rounds.length-1;\r\n        _roundOwners[roundId] = msg.sender;\r\n        _transferToRound(msg.sender, roundId, _balance);\r\n        emit NewRound(msg.sender, roundId, _resultContract, _endTime, _balance);\r\n    }\r\n\r\n    function buyTicket(   \r\n        uint256 _data,\r\n        uint256 _price,\r\n        uint256 _roundId\r\n    ) external{\r\n        require(_roundExists(_roundId), \"Operator query for nonexistent round\");\r\n        require(checkTicketBuyInterface(rounds[_roundId].resultContract).checkTicketBuy(_roundId, _data, _price));\r\n        _transferToRound(msg.sender, _roundId, _price);\r\n        Ticket memory newTicket = Ticket(_data, _price, _roundId, false);\r\n        tickets.push(newTicket);\r\n        uint ticketId = tickets.length - 1;\r\n        rounds[_roundId].ticketIds.push(ticketId);\r\n        _ticketOwners[ticketId] = msg.sender;\r\n        emit NewTicket(msg.sender, ticketId, _data, _price, _roundId, false);\r\n    }\r\n\r\n    function _transferToRound(\r\n        address _sender,\r\n        uint256 _roundId,\r\n        uint256 _amount\r\n    ) internal {\r\n        require(_sender != address(0), \"ERC20: transfer from the zero address\");\r\n        require(_roundExists(_roundId), \"Operator query for nonexistent round\");\r\n\r\n        uint256 senderBalance = _balances[_sender];\r\n        require(senderBalance >= _amount, \"ERC20: transfer amount exceeds balance\");\r\n        _balances[_sender] = senderBalance - _amount;\r\n        _balanceOfRounds[_roundId] += _amount;\r\n    }\r\n\r\n    function _transferFromRound(\r\n        address _recipient,\r\n        uint256 _roundId,\r\n        uint256 _amount\r\n    ) internal {\r\n        require(\r\n            _recipient != address(0),\r\n            \"ERC20: transfer to the zero address\"\r\n        );\r\n        require(_roundExists(_roundId), \"Operator query for nonexistent round\");\r\n\r\n        uint256 senderBalance = _balanceOfRounds[_roundId];\r\n        require(\r\n            senderBalance >= _amount,\r\n            \"ERC20: transfer amount exceeds balance\"\r\n        );\r\n        _balanceOfRounds[_roundId] = senderBalance - _amount;\r\n        _balances[_recipient] += _amount;\r\n    }\r\n\r\n    function withDrawTicket (uint ticketId) external nonReentrant{\r\n        require(_ticketOwners[ticketId]==msg.sender);\r\n        require(!tickets[ticketId].used);\r\n        uint256 roundId = tickets[ticketId].roundId;\r\n        uint256 winChip;\r\n        winChip = ticketWinChip(ticketId);\r\n        if(winChip == 0){\r\n            _disableTicket(ticketId);\r\n        }\r\n        else{\r\n            uint256 roundBalance = _balanceOfRounds[roundId];\r\n            if(winChip >= roundBalance){\r\n                _transferFromRound(msg.sender, roundId, winChip);\r\n            }\r\n            else{\r\n                if(roundBalance!=0){\r\n                    _transferFromRound(msg.sender, roundId, roundBalance);\r\n                }              \r\n                _approve(_roundOwners[roundId], msg.sender, roundBalance-winChip);\r\n            }\r\n            _disableTicket(ticketId);\r\n        }\r\n        emit WithDrawTicket(msg.sender, ticketId, winChip);\r\n    }\r\n\r\n    function sumOfWinnerChipOfRound(uint roundId) view public returns (uint256){\r\n        uint sumOfWinChip = 0;\r\n        uint i = 0;\r\n        address resultContract = rounds[roundId].resultContract;\r\n        for(i;i<rounds[roundId].ticketIds.length;i++){\r\n            if(!tickets[rounds[roundId].ticketIds[i]].used)\r\n                sumOfWinChip += checkResultInterface(resultContract).checkResult(rounds[roundId].ticketIds[i]);\r\n        }\r\n        return sumOfWinChip;\r\n    }\r\n\r\n    function checkRoundRemainingBalance(uint256 roundId) public view returns(uint256){\r\n        uint256 balance = _balanceOfRounds[roundId];\r\n        uint256 sumOfWinChip = sumOfWinnerChipOfRound(roundId);\r\n        if(balance > sumOfWinChip){\r\n            return balance - sumOfWinChip;\r\n        }\r\n        else return 0;\r\n    }\r\n\r\n    function withDrawRound(uint256 roundId) external nonReentrant{\r\n        require(_roundOwners[roundId] == msg.sender);\r\n        uint256 balance = _balanceOfRounds[roundId];\r\n        uint256 sumOfWinChip = sumOfWinnerChipOfRound(roundId);\r\n        require(balance > sumOfWinChip);\r\n        _transferFromRound(msg.sender, roundId, balance - sumOfWinChip);\r\n        emit WithDrawRound(msg.sender, roundId, balance - sumOfWinChip);\r\n    }\r\n\r\n    function _roundExists(uint256 _roundId) internal view returns (bool) {\r\n        return _roundOwners[_roundId] != address(0);\r\n    }\r\n\r\n    function _ticketExists(uint256 _ticketId) internal view returns (bool) {\r\n        return _ticketOwners[_ticketId] != address(0);\r\n    }\r\n\r\n    function buyToken() public payable{\r\n        require(msg.value >= token_price);\r\n        _balances[msg.sender] += (msg.value/token_price);\r\n    }\r\n\r\n    function balanceOfRound(uint roundId) public view returns(uint256){\r\n        return _balanceOfRounds[roundId];\r\n    }\r\n\r\n    function ticketToOwner(uint ticketId) public view returns(address) {\r\n        return _ticketOwners[ticketId];\r\n    }\r\n\r\n    function ownerToTickets() public view returns(uint256[] memory){\r\n        uint i = 0;\r\n        uint j = 0;\r\n        uint256[] memory tempTicketIds = new uint256[](tickets.length);\r\n        for(i;i<tickets.length;i++){\r\n            if(_ticketOwners[i]==msg.sender){\r\n                tempTicketIds[j] = i;\r\n                j++;\r\n            }\r\n        }\r\n        uint256[] memory ticketIds = new uint256[](j);\r\n        for(i=0;i<j;i++){\r\n            ticketIds[i] = tempTicketIds[i];\r\n        }\r\n        return ticketIds;\r\n    }\r\n\r\n    function ownerToWinTickets() public view returns (uint256[] memory){\r\n        uint i = 0;\r\n        uint j = 0;\r\n        uint256[] memory tempTicketIds = new uint256[](tickets.length);\r\n        for(i;i<tickets.length;i++){\r\n            if(_ticketOwners[i]==msg.sender){\r\n                if(!tickets[i].used){\r\n                    if(ticketWinChip(i)>0){\r\n                        tempTicketIds[j] = i;\r\n                        j++;\r\n                    }\r\n                }\r\n            }\r\n        }\r\n        uint256[] memory ticketIds = new uint256[](j);\r\n        for(i=0;i<j;i++){\r\n            ticketIds[i] = tempTicketIds[i];\r\n        }\r\n        return ticketIds;\r\n    }\r\n\r\n    function roundToWinTickets(uint _roundId) public view returns (uint256[] memory){\r\n        uint i = 0;\r\n        uint j = 0;\r\n        uint256[] memory tempTicketIds = new uint256[](rounds[_roundId].ticketIds.length);\r\n        for(i;i<rounds[_roundId].ticketIds.length;i++){\r\n            if(!tickets[rounds[_roundId].ticketIds[i]].used){\r\n                if(ticketWinChip(rounds[_roundId].ticketIds[i])>0){\r\n                    tempTicketIds[j] = i;\r\n                    j++;\r\n                }\r\n            }\r\n        }\r\n        uint256[] memory ticketIds = new uint256[](j);\r\n        for(i=0;i<j;i++){\r\n            ticketIds[i] = tempTicketIds[i];\r\n        }\r\n        return ticketIds;\r\n    }\r\n\r\n    function ticketWinChip(uint256 ticketId) public view returns (uint256){\r\n        uint256 roundId = tickets[ticketId].roundId;\r\n        uint256 winChip;\r\n        winChip = checkResultInterface(rounds[roundId].resultContract).checkResult(ticketId);\r\n        return winChip;    \r\n    }\r\n\r\n    function roundToOwner(uint roundId) public view returns(address){\r\n        return _roundOwners[roundId];\r\n    }\r\n\r\n    function ownerToRounds() public view returns(uint256[] memory){\r\n        uint i = 0;\r\n        uint j = 0;\r\n        uint256[] memory tempRoundIds = new uint256[](rounds.length);\r\n        for(i;i<rounds.length;i++){\r\n            if(_roundOwners[i]==msg.sender){\r\n                tempRoundIds[j] = i;\r\n                j++;\r\n            }\r\n        }\r\n        uint256[] memory roundIds = new uint256[](j);\r\n        for(i=0;i<j;i++){\r\n            roundIds[i] = tempRoundIds[i];\r\n        }\r\n        return roundIds;\r\n    }\r\n\r\n    function _disableTicket(uint256 ticketId) private {\r\n        tickets[ticketId].used = true;\r\n    }\r\n\r\n    fallback () external payable{\r\n        buyToken();\r\n    }\r\n\r\n    receive() external payable {\r\n        buyToken();\r\n    }\r\n}\r\n",
-  "sourcePath": "D:\\cryptoZombie\\dappReact\\contracts\\BoNhaCai.sol",
+  "sourcePath": "D:/cryptoZombie/dappReact/contracts/BoNhaCai.sol",
   "ast": {
     "absolutePath": "/D/cryptoZombie/dappReact/contracts/BoNhaCai.sol",
     "exportedSymbols": {
@@ -43,16 +43,16 @@
         1320
       ],
       "Context": [
-        2882
+        1922
       ],
       "CustomERC20": [
         1821
       ],
       "IERC20": [
-        2859
+        1899
       ],
       "ReentrancyGuard": [
-        2922
+        1962
       ],
       "checkResultInterface": [
         11
@@ -96,7 +96,7 @@
         "id": 3,
         "nodeType": "ImportDirective",
         "scope": 1321,
-        "sourceUnit": 2923,
+        "sourceUnit": 1963,
         "src": "91:62:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -490,7 +490,7 @@
               "id": 36,
               "name": "ReentrancyGuard",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 2922,
+              "referencedDeclaration": 1962,
               "src": "635:15:0"
             },
             "id": 37,
@@ -500,19 +500,19 @@
         ],
         "contractDependencies": [
           1821,
-          2859,
-          2882,
-          2922
+          1899,
+          1922,
+          1962
         ],
         "contractKind": "contract",
         "fullyImplemented": true,
         "id": 1320,
         "linearizedBaseContracts": [
           1320,
-          2922,
+          1962,
           1821,
-          2859,
-          2882
+          1899,
+          1922
         ],
         "name": "BoNhaCai",
         "nodeType": "ContractDefinition",
@@ -8010,7 +8010,7 @@
                   "id": 530,
                   "name": "nonReentrant",
                   "nodeType": "IdentifierPath",
-                  "referencedDeclaration": 2921,
+                  "referencedDeclaration": 1961,
                   "src": "5241:12:0"
                 },
                 "nodeType": "ModifierInvocation",
@@ -9864,7 +9864,7 @@
                   "id": 729,
                   "name": "nonReentrant",
                   "nodeType": "IdentifierPath",
-                  "referencedDeclaration": 2921,
+                  "referencedDeclaration": 1961,
                   "src": "7008:12:0"
                 },
                 "nodeType": "ModifierInvocation",
@@ -16050,16 +16050,16 @@
         1320
       ],
       "Context": [
-        2882
+        1922
       ],
       "CustomERC20": [
         1821
       ],
       "IERC20": [
-        2859
+        1899
       ],
       "ReentrancyGuard": [
-        2922
+        1962
       ],
       "checkResultInterface": [
         11
@@ -16103,7 +16103,7 @@
         "id": 3,
         "nodeType": "ImportDirective",
         "scope": 1321,
-        "sourceUnit": 2923,
+        "sourceUnit": 1963,
         "src": "91:62:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -16497,7 +16497,7 @@
               "id": 36,
               "name": "ReentrancyGuard",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 2922,
+              "referencedDeclaration": 1962,
               "src": "635:15:0"
             },
             "id": 37,
@@ -16507,19 +16507,19 @@
         ],
         "contractDependencies": [
           1821,
-          2859,
-          2882,
-          2922
+          1899,
+          1922,
+          1962
         ],
         "contractKind": "contract",
         "fullyImplemented": true,
         "id": 1320,
         "linearizedBaseContracts": [
           1320,
-          2922,
+          1962,
           1821,
-          2859,
-          2882
+          1899,
+          1922
         ],
         "name": "BoNhaCai",
         "nodeType": "ContractDefinition",
@@ -24017,7 +24017,7 @@
                   "id": 530,
                   "name": "nonReentrant",
                   "nodeType": "IdentifierPath",
-                  "referencedDeclaration": 2921,
+                  "referencedDeclaration": 1961,
                   "src": "5241:12:0"
                 },
                 "nodeType": "ModifierInvocation",
@@ -25871,7 +25871,7 @@
                   "id": 729,
                   "name": "nonReentrant",
                   "nodeType": "IdentifierPath",
-                  "referencedDeclaration": 2921,
+                  "referencedDeclaration": 1961,
                   "src": "7008:12:0"
                 },
                 "nodeType": "ModifierInvocation",
@@ -32056,7 +32056,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-04-17T15:29:08.148Z",
+  "updatedAt": "2021-04-17T18:17:13.182Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
