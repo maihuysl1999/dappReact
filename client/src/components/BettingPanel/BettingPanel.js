@@ -53,7 +53,7 @@ class BettingPanel extends Component {
         if (winning_colour === 'black' || winning_colour === 'red'){
             mult = 2;
         } else{
-            mult = 14;
+            mult = 36;
         }
         setTimeout(() => {
             if (colour === winning_colour) {
@@ -92,7 +92,7 @@ class BettingPanel extends Component {
                 {error}
                 <div className={classes.betButtons}>
                     <button className={classes.red} style={this.props.btn_dis_style} disabled={this.props.disabledBool} onClick={this.clickHandle.bind(this, 'red')}>Bet Red (X2)</button>
-                    <button className={classes.green} style={this.props.btn_dis_style} disabled={this.props.disabledBool} onClick={this.clickHandle.bind(this, 'green')}>Bet Green (X14)</button>
+                    <button className={classes.green} style={this.props.btn_dis_style} disabled={this.props.disabledBool} onClick={this.clickHandle.bind(this, 'green')}>Bet Green (X36)</button>
                     <button className={classes.black} style={this.props.btn_dis_style} disabled={this.props.disabledBool} onClick={this.clickHandle.bind(this, 'black')}>Bet Black (X2)</button>
                 </div>
             </div>
