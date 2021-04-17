@@ -4,11 +4,21 @@
   "private": true,
   "dependencies": {
     "@openzeppelin/contracts": "^4.0.0",
+    "bootstrap": "^4.6.0",
+    "classnames": "^2.3.1",
+    "headroom.js": "^0.12.0",
     "jquery": "^3.6.0",
+    "moment": "^2.29.1",
+    "node-sass": "^4.0.0",
+    "nouislider": "^14.7.0",
     "react": "16.11.0",
     "react-custom-roulette": "^1.1.8",
+    "react-datetime": "^3.0.4",
     "react-dom": "16.11.0",
+    "react-router": "^5.2.0",
+    "react-router-dom": "^5.2.0",
     "react-scripts": "3.2.0",
+    "reactstrap": "^8.9.0",
     "web3": "1.2.2"
   },
   "scripts": {

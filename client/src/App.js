@@ -3,10 +3,10 @@ import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import getWeb3 from "./getWeb3";
 
 import "./App.css";
-import RouletteWheel from "./components/RouleteWheel";
+import RouletteWheel from "./views/RouleteWheel";
 
 import Test from "./components/Test";
-import BettingPanel from "./components/BettingPanel/BettingPanel";
+import BettingPanel from "./views/BettingPanel/BettingPanel";
 import ListRound from "./components/ListRound";
 
 function App() {

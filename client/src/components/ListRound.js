@@ -28,7 +28,7 @@ class ListRound extends Component {
         deployedNetwork && deployedNetwork.address,
       );
       let response = await instance.methods.balanceOf(accounts[0]).call();
-      await instance.methods.getLengthRounds().call().then((res)=>{
+      await instance.methods.getLengthRounds.call().then((res)=>{
         console.log(res);
       });
 
