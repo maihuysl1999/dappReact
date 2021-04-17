@@ -60,8 +60,10 @@ class App extends Component {
 
       <div className="App">
         <Test/>
-        <RouleteTable/>
+        
         <RouletteWheel/>
+
+        <RouleteTable/>
         {/* <h1>Good to Go!</h1>
         <p>Your Truffle Box is installed and ready.</p>
         <h2>Smart Contract Example</h2>

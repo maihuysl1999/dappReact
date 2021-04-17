@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import {} from '../indexRouleteTable';
 import jQuery from 'jquery'; 
 
 class RouleteTable extends Component {
