@@ -10,6 +10,7 @@ class Test extends Component {
     contract: null, round: null,
     networkId: 0,
     numbToken: null,
+    roundInfor: [], 
   };
   componentDidMount = async () => {
     try {
@@ -43,8 +44,6 @@ class Test extends Component {
   onBuyToken = (e) => {
 
     const { web3, accounts, contract, numbToken } = this.state;
-    console.log(numbToken);
-
     // Stores a given value, 5 by default.
     contract.methods.buyToken().send({ from: accounts[0], value: web3.utils.toWei(numbToken, "ether") });
 
@@ -70,10 +69,9 @@ class Test extends Component {
       SimpleLottery.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    console.log(instance._address);
 
-    await contract.methods.createRound(0, instance._address ,1618479028, 20).send({ from: accounts[0] });
-    window.location.reload();
+    await contract.methods.createRound(0, instance._address ,1618598529, 20).send({ from: accounts[0] });
+
   };
 
   render() {
@@ -86,6 +84,8 @@ class Test extends Component {
         </form>
         <button onClick={this.onCreateRound}>createRound</button>
         <p>{this.state.storageValue}</p>
+        <h2> round infor </h2>
+        <p>{this.state.roundInfor}</p>
       </div>
     );
   }
