@@ -69,6 +69,11 @@ contract BoNhaCai is CustomERC20, ReentrancyGuard{
         return (rounds[_roundId].data, rounds[_roundId].endTime, rounds[_roundId].resultContract, rounds[_roundId].ticketIds);
     } 
 
+    function getLengthRounds() public view returns(uint256) {
+        return rounds.length;
+    }
+
+
     function getTicket(uint256 _ticketId) public view returns(uint256 , uint256 , uint256 , bool){
         require(_ticketExists(_ticketId));
         return (tickets[_ticketId].data, tickets[_ticketId].ticketPrice, tickets[_ticketId].roundId, tickets[_ticketId].used);

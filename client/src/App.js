@@ -7,6 +7,7 @@ import RouletteWheel from "./components/RouleteWheel"
 
 import Test from "./components/Test";
 import RouleteTable from "./components/RouleteTable";
+import ListRound from "./components/ListRound";
 
 class App extends Component {
   // state = { storageValue: 0, web3: null, accounts: null, contract: null };
@@ -60,6 +61,7 @@ class App extends Component {
 
       <div className="App">
         <Test/>
+        <ListRound/>
         
         <RouletteWheel/>
 
