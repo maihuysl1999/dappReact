@@ -1,14 +1,14 @@
-import React, { Component } from "react";
+import React, { Component, useRef } from "react";
 import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import getWeb3 from "./getWeb3";
 
 import "./App.css";
-import RouletteWheel from "./components/RouleteWheel"
+import RouletteWheel from "./components/RouleteWheel";
 
 import Test from "./components/Test";
-import RouleteTable from "./components/RouleteTable";
+import BettingPanel from "./components/BettingPanel/BettingPanel";
 
-class App extends Component {
+function App() {
   // state = { storageValue: 0, web3: null, accounts: null, contract: null };
 
   // componentDidMount = async () => {
@@ -52,32 +52,26 @@ class App extends Component {
   //   this.setState({ storageValue: response });
   // };
 
-  render() {
-    // if (!this.state.web3) {
-    //   return <div>Loading Web3, accounts, and contract...</div>;
-    // }
-    return (
+  const spin = () => {
+    childRef.current.handleSpinClick();
+  };
 
-      <div className="App">
-        <Test/>
-        
-        <RouletteWheel/>
+  const childRef = useRef();
 
-        <RouleteTable/>
-        {/* <h1>Good to Go!</h1>
-        <p>Your Truffle Box is installed and ready.</p>
-        <h2>Smart Contract Example</h2>
-        <p>
-          If your contracts compiled and migrated successfully, below will show
-          a stored value of 5 (by default).
-        </p>
-        <p>
-          Try changing the value stored on <strong>line 40</strong> of App.js.
-        </p>
-        <div>The stored value is: {this.state.storageValue}</div> */}
+  return (
+    <div className="App">
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <RouletteWheel ref={childRef} />
+        <BettingPanel spin={spin} />
       </div>
-    );
-  }
+    </div>
+  );
 }
 
 export default App;

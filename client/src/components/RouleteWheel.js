@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState,forwardRef, useRef, useImperativeHandle } from 'react'
 import { Wheel } from 'react-custom-roulette'
 
 const data = [
@@ -48,16 +48,21 @@ const data = [
   const radiusLineWidth = 2;
   const textDistance = 75;
   const perpendicularText = true;
-export default () => {
+
+const RouleteWheel = forwardRef((props, ref) => {
   const [mustSpin, setMustSpin] = useState(false);
   const [prizeNumber, setPrizeNumber] = useState(0);
 
-  const handleSpinClick = () => {
-    console.log(prizeNumber);
-    const newPrizeNumber = Math.floor(Math.random() * data.length)
-    setPrizeNumber(newPrizeNumber)
-    setMustSpin(true)
-  }
+  useImperativeHandle(ref, () => ({
+
+    handleSpinClick() {
+        console.log(prizeNumber);
+        const newPrizeNumber = Math.floor(Math.random() * data.length)
+        setPrizeNumber(newPrizeNumber)
+        setMustSpin(true)
+    }
+
+  }));
 
   return (
     <>
@@ -77,8 +82,8 @@ export default () => {
           setMustSpin(false)
         }}
       />
-      <button onClick={handleSpinClick}>SPIN</button>
-      <p>{data[prizeNumber].option} </p>
     </>
   )
-}
+});
+
+export default RouleteWheel;
