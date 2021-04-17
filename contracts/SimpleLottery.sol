@@ -46,11 +46,9 @@ contract SimpleLottery {
     }
 
     function checkTicketBuy(uint roundId, uint256 _data) public view virtual returns (bool){
-        uint256[] memory ticketIds;
         uint256 data;
         uint256 endTime;
-        address resultContract; 
-        (data,endTime,resultContract,ticketIds) = boNhaCai.getRound(roundId);
+        (data,endTime,,) = boNhaCai.getRound(roundId);
         require(endTime > block.timestamp);
         require(winners[roundId]==0);
         return true;

@@ -3,8 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "./CustomERC20.sol";
-import "../node_modules/@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 
 abstract contract checkResultInterface {
@@ -51,7 +50,10 @@ contract BoNhaCai is CustomERC20, ReentrancyGuard{
 
     mapping(uint256 => address) private _ticketOwners;
 
-    event NewRound(address owner, address resultContract, uint256 endTime, uint balance);
+    event NewRound(address owner, uint roundId, address resultContract, uint256 endTime, uint balance);
+    event NewTicket(address owner, uint ticketId, uint data, uint ticketPrice, uint roundId, bool used);
+    event WithDrawTicket(address owner, uint ticketId, uint amount);
+    event WithDrawRound(address owner, uint roundId, uint amount);
 
     function getAdmin() view public returns(address){
         return admin;
@@ -77,7 +79,7 @@ contract BoNhaCai is CustomERC20, ReentrancyGuard{
         address _resultContract,
         uint256 _endTime,
         uint256 _balance
-    ) external returns (uint256){
+    ) external {
         require(checkRoundCreateInterface(_resultContract).checkRoundCreate(_data, _endTime));
         Round memory newRound;
         newRound.endTime = _endTime;
@@ -87,15 +89,14 @@ contract BoNhaCai is CustomERC20, ReentrancyGuard{
         uint roundId = rounds.length-1;
         _roundOwners[roundId] = msg.sender;
         _transferToRound(msg.sender, roundId, _balance);
-        //emit NewRound(msg.sender, _resultContract, _endTime, _balance);
-        return roundId;
+        emit NewRound(msg.sender, roundId, _resultContract, _endTime, _balance);
     }
 
     function buyTicket(   
         uint256 _data,
         uint256 _price,
         uint256 _roundId
-    ) external returns (uint256){
+    ) external{
         require(_roundExists(_roundId), "Operator query for nonexistent round");
         require(checkTicketBuyInterface(rounds[_roundId].resultContract).checkTicketBuy(_roundId, _data));
         _transferToRound(msg.sender, _roundId, _price);
@@ -104,7 +105,7 @@ contract BoNhaCai is CustomERC20, ReentrancyGuard{
         uint ticketId = tickets.length - 1;
         rounds[_roundId].ticketIds.push(ticketId);
         _ticketOwners[ticketId] = msg.sender;
-        return ticketId;
+        emit NewTicket(msg.sender, ticketId, _data, _price, _roundId, false);
     }
 
     function _transferToRound(
@@ -163,6 +164,7 @@ contract BoNhaCai is CustomERC20, ReentrancyGuard{
             }
             _disableTicket(ticketId);
         }
+        emit WithDrawTicket(msg.sender, ticketId, winChip);
     }
 
     function sumOfWinnerChipOfRound(uint roundId) view public returns (uint256){
@@ -176,13 +178,22 @@ contract BoNhaCai is CustomERC20, ReentrancyGuard{
         return sumOfWinChip;
     }
 
+    function checkRoundRemainingBalance(uint256 roundId) public view returns(uint256){
+        uint256 balance = _balanceOfRounds[roundId];
+        uint256 sumOfWinChip = sumOfWinnerChipOfRound(roundId);
+        if(balance > sumOfWinChip){
+            return balance - sumOfWinChip;
+        }
+        else return 0;
+    }
+
     function withDrawRound(uint256 roundId) external nonReentrant{
         require(_roundOwners[roundId] == msg.sender);
         uint256 balance = _balanceOfRounds[roundId];
         uint256 sumOfWinChip = sumOfWinnerChipOfRound(roundId);
-        if(balance > sumOfWinChip){
-            _transferFromRound(msg.sender, roundId, balance - sumOfWinChip);
-        }
+        require(balance > sumOfWinChip);
+        _transferFromRound(msg.sender, roundId, balance - sumOfWinChip);
+        emit WithDrawRound(msg.sender, roundId, balance - sumOfWinChip);
     }
 
     function _roundExists(uint256 _roundId) internal view returns (bool) {
