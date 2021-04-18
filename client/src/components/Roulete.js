@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
-import RouletteWheel from "./RouleteWheel";
-import BettingPanel from "./BettingPanel/BettingPanel";
+import RouletteWheel from "../views/RouleteWheel";
+import BettingPanel from "../views/BettingPanel/BettingPanel";
 function Roulete() {
 
     const spin = () => {

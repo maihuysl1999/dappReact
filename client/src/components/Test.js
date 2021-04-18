@@ -2,8 +2,8 @@ import React, { Component } from "react";
 import BoNhaCai from "../contracts/BoNhaCai.json";
 import SimpleLottery from "../contracts/SimpleLottery.json";
 import getWeb3 from "../getWeb3";
-import ListRound from "./ListRound";
-import {Button} from "react-bootstrap";
+//import ListRound from "./ListRound";
+import {Button} from "reactstrap";
 
 class Test extends Component {
   state = {
@@ -99,7 +99,7 @@ class Test extends Component {
         <p>{this.state.storageValue}</p>
         <h2> round infor </h2>
         <p>{this.state.roundInfor? this.state.roundInfor[1] : "" }</p>
-        <ListRound contract= {this.state.contract}/>        
+        {/* <ListRound contract= {this.state.contract}/>         */}
       </div>
     );
   }

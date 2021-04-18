@@ -15,8 +15,11 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
 import Round from "../../components/Round.js"
+import React, { Component } from "react";
+import BoNhaCai from "../../contracts/BoNhaCai.json";
+import getWeb3 from "../../getWeb3";
+import SimpleDateTime  from 'react-simple-timestamp-to-date';
 // nodejs library that concatenates classes
 
 // reactstrap components
@@ -34,7 +37,50 @@ import CardsFooter from "components/Footers/CardsFooter.js";
 import Download from "../IndexSections/Download.js";
 
 class Landing extends React.Component {
-  state = {};
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      props,
+      ListRound: [],
+    };
+  }
+  componentDidMount = async () => {
+    try {
+      // Get network provider and web3 instance.
+      const web3 = await getWeb3();
+
+      // Use web3 to get the user's accounts.
+      const accounts = await web3.eth.getAccounts();
+
+      // Get the contract instance.
+      const netId = await web3.eth.net.getId();
+      const deployedNetwork = BoNhaCai.networks[netId];
+      const instance = new web3.eth.Contract(
+        BoNhaCai.abi,
+        deployedNetwork && deployedNetwork.address,
+      );
+      let response = await instance.methods.balanceOf(accounts[0]).call();
+      let lenghtRound = 0;
+      await instance.methods.getLengthRounds().call().then((res) => {
+        lenghtRound = res;
+      });
+      for (let i = 0; i < lenghtRound; i++) {
+        await instance.methods.getRound(i).call().then((res) => {
+          this.state.ListRound.push(res);
+        });
+      }
+      this.setState({ storageValue: response, web3, accounts, contract: instance, networkId: netId });
+    } catch (error) {
+      // Catch any errors for any of the above operations.
+      alert(
+        `Failed to load web3, accounts, or contract. Check console for details.`,
+      );
+      console.error(error);
+    }
+  };
+
   componentDidMount() {
     document.documentElement.scrollTop = 0;
     document.scrollingElement.scrollTop = 0;
@@ -83,9 +129,10 @@ class Landing extends React.Component {
             <Container>
               <Row className="justify-content-center">
                 <Col lg="12">
-                  <Row className="row-grid">
-                    <Round></Round>
-                    <Round></Round>
+                  <Row className="row-grid flex">
+                    {this.state.ListRound.map((item, index)=>{
+                      return(<Round roundInfo={item} index={index}></Round>)
+                    })}
                   </Row>
                 </Col>
               </Row>

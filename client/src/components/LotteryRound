@@ -11,7 +11,7 @@ class Round extends Component {
             <div className="icon icon-shape icon-shape-primary rounded-circle mb-4">
               <i className="ni ni-check-bold" />
             </div>
-            <h6 className="text-primary text-uppercase">{}</h6>
+            <SimpleDateTime dateSeparator="/" timeSeparator=":" fomat="YMD">{this.props.item[1]}</SimpleDateTime>
             <p className="description mt-3">
               Argon is a great free UI package based on Bootstrap 4 that
               includes the most important components and features.

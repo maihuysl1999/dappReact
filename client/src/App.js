@@ -8,9 +8,9 @@ import {
 } from "react-router-dom";
 
 import Roulete from "./components/Roulete";
-import RouletteWheel from "./components/RouleteWheel";
+import RouletteWheel from "./views/RouleteWheel";
 import Test from "./components/Test";
-import BettingPanel from "./components/BettingPanel/BettingPanel";
+import BettingPanel from "./views/BettingPanel/BettingPanel";
 
 
 
