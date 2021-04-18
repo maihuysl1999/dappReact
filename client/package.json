@@ -12,6 +12,7 @@
     "node-sass": "^4.0.0",
     "nouislider": "^14.7.0",
     "react": "16.11.0",
+    "react-bootstrap": "^1.5.2",
     "react-custom-roulette": "^1.1.8",
     "react-datetime": "^3.0.4",
     "react-dom": "16.11.0",

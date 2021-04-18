@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import BoNhaCai from "../contracts/BoNhaCai.json";
 import SimpleLottery from "../contracts/SimpleLottery.json";
 import getWeb3 from "../getWeb3";
+import ListRound from "./ListRound";
+import {Button} from "react-bootstrap";
 
 class Test extends Component {
   state = {
@@ -12,6 +14,8 @@ class Test extends Component {
     numbToken: null,
     roundInfor: null
   };
+
+
   componentDidMount = async () => {
     try {
       // Get network provider and web3 instance.
@@ -54,6 +58,7 @@ class Test extends Component {
       // Update state with the result.
       this.setState({ storageValue: res });
     });
+    
     e.preventDefault();
   };
 
@@ -71,17 +76,15 @@ class Test extends Component {
       SimpleLottery.abi,
       deployedNetwork && deployedNetwork.address,
     );
-    console.log(instance._address);
-    let roundId = 0;
-    await contract.methods.createRound(0, instance._address ,1618659175, 20).send({ from: accounts[0] })
-    .then(function(event) {
-      roundId = event.events.NewRound.returnValues[1];
-    });
-    await contract.methods.getRound(roundId).call().then((res)=>{
-      //console.log(res);
-      this.setState({roundInfor:res})
-    })
-    //window.location.reload();
+    try {
+      await contract.methods.createRound(10, instance._address ,1618685460, 20).send({ from: accounts[0] });
+    }
+    catch (error){
+      alert(
+        `Failed to create Round. Check your data.`,
+      );
+      console.error(error);
+    }  
   };
 
   render() {
@@ -92,9 +95,11 @@ class Test extends Component {
         <form onSubmit={this.onBuyToken}>
           <input onChange={this.onChange}></input>
         </form>
-        <button onClick={this.onCreateRound}>createRound</button>
+        <Button onClick={this.onCreateRound}>createRound</Button>
         <p>{this.state.storageValue}</p>
+        <h2> round infor </h2>
         <p>{this.state.roundInfor? this.state.roundInfor[1] : "" }</p>
+        <ListRound contract= {this.state.contract}/>        
       </div>
     );
   }
