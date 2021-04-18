@@ -32,6 +32,7 @@ class Test extends Component {
         deployedNetwork && deployedNetwork.address,
       );
       let response = await instance.methods.balanceOf(accounts[0]).call();
+      console.log(instance._address);
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
@@ -77,7 +78,8 @@ class Test extends Component {
       deployedNetwork && deployedNetwork.address,
     );
     try {
-      await contract.methods.createRound(10, instance._address ,1618685460, 20).send({ from: accounts[0] });
+      await contract.methods.createRound(10, instance._address ,1618729127, 20).send({ from: accounts[0] });
+      console.log("hello");
     }
     catch (error){
       alert(

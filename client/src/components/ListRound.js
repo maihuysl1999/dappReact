@@ -28,6 +28,7 @@ class ListRound extends Component {
         BoNhaCai.abi,
         deployedNetwork && deployedNetwork.address,
       );
+      console.log(instance._address);
       let response = await instance.methods.balanceOf(accounts[0]).call();
       let lenghtRound = 0;
       await instance.methods.getLengthRounds().call().then((res) => {
@@ -39,6 +40,7 @@ class ListRound extends Component {
         });
       }
       this.setState({ storageValue: response, web3, accounts, contract: instance, networkId: netId });
+      await instance.events.NewRound({fromBlock: 'latest' }).on('data', event => console.log(event));
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
